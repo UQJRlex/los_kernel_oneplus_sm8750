@@ -175,3 +175,10 @@ sphinx_*/
 
 # Rust analyzer configuration
 /rust-project.json
+
+# my
+*.diff
+*.patch
+out/
+# sh
+x-*.sh
