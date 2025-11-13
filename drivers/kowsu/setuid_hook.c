@@ -13,7 +13,6 @@
 #include <linux/init.h>
 #include <linux/init_task.h>
 #include <linux/kernel.h>
-#include <linux/kprobes.h>
 #include <linux/mm.h>
 #include <linux/mount.h>
 #include <linux/namei.h>

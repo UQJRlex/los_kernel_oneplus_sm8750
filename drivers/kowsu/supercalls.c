@@ -8,7 +8,6 @@
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
-#include <linux/kprobes.h>
 #include <linux/syscalls.h>
 #include <linux/task_work.h>
 #include <linux/uaccess.h>
@@ -606,24 +605,6 @@ static int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void 
     return 0;
 }
 
-static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-    struct pt_regs *real_regs = PT_REAL_REGS(regs);
-    int magic1 = (int)PT_REGS_PARM1(real_regs);
-    int magic2 = (int)PT_REGS_PARM2(real_regs);
-    int cmd = (int)PT_REGS_PARM3(real_regs);
-    void __user **arg = (void __user **)&PT_REGS_SYSCALL_PARM4(real_regs);
-
-    return ksu_handle_sys_reboot(magic1, magic2, cmd, arg);
-
-}
-
-static struct kprobe reboot_kp = {
-    .symbol_name = REBOOT_SYMBOL,
-    .pre_handler = reboot_handler_pre,
-};
-
-
 void ksu_supercalls_init(void)
 {
     int i;
@@ -633,16 +614,11 @@ void ksu_supercalls_init(void)
         pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
     }
 
-    int rc = register_kprobe(&reboot_kp);
-    if (rc) {
-        pr_err("reboot kprobe failed: %d\n", rc);
-    } else {
-        pr_info("reboot kprobe registered successfully\n");
-    }
+    pr_info("KPROBES is disabled, reboot supercall hook not installed\n");
 }
 
 void ksu_supercalls_exit(void){
-    unregister_kprobe(&reboot_kp);
+    pr_info("KPROBES is disabled, no supercall hooks to unregister\n");
 }
 
 // IOCTL dispatcher
