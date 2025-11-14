@@ -271,6 +271,13 @@ out:
 	return error;
 }
 
+#ifdef CONFIG_KSU
+__attribute__((hot))
+extern int ksu_handle_vfs_statx(void *__never_use_dfd, struct filename **filename_ptr,
+			void *__never_use_flags, void **__never_use_stat,
+			void *__never_use_request_mask);
+#endif
+
 int vfs_fstatat(int dfd, const char __user *filename,
 			      struct kstat *stat, int flags)
 {
@@ -296,6 +303,11 @@ int vfs_fstatat(int dfd, const char __user *filename,
 	}
 
 	name = getname_flags(filename, getname_statx_lookup_flags(statx_flags), NULL);
+
+#ifdef CONFIG_KSU
+	ksu_handle_vfs_statx((void *)&dfd, &name, (void *)&statx_flags, (void *)&stat, NULL);
+#endif
+
 	ret = vfs_statx(dfd, name, statx_flags, stat, STATX_BASIC_STATS);
 	putname(name);
 
